@@ -1,0 +1,26 @@
+setwd("C:/Users/SAMIKSHA/Desktop") 
+data<-read.csv("C:/Users/SAMIKSHA/Desktop/data base.csv")
+ data
+summary(data_base)
+install.packages("vcd")
+library(vcd)
+ mean(data_base$Year)
+ median(data_base$Year)
+ mode(data_base$Year)
+ install.packages("dplr")
+ install.packages("dplR")
+ library(dplR)
+ install.packages("ggplot2")
+ library(ggplot2)
+ x<-c(700,699,691,682,671,675)
+ y<-(243,294,369,452,521,671)
+y<-c(243,294,369,452,521,671)
+ value<-x+y
+ hist(x,y)
+ hist(x)
+data<-read.csv("C:/Users/SAMIKSHA/Desktop/data base.csv")
+ data
+library(dplyr)
+selected_data<-select(data,c(1:7))
+ selected_data
+hist(data$Number.Tested,main ="sample",Number.Tested="Marks")
