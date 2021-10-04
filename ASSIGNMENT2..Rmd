@@ -1,0 +1,276 @@
+---
+title: "ASSIGNMENT2MAIN"
+author: "SSAMIKSHA VENUGOPAL"
+date: "10/4/2021"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+install.packages("caret")
+library(caret)
+
+install.packages("ISLR")
+library(ISRL)
+
+install.packages("class")
+library(class)
+
+install.packages("FNN")
+library(FNN)
+
+## Reading the file universal bank csv file 
+UniversalBank <- read_csv("UniversalBank.csv")
+
+## Removing the ID and Zip code
+``{r}
+UniversalBank<-UniversalBank
+UniversalBank<-UniversalBank[,c(-1,-5)]
+str(UniversalBank)
+
+``
+### Using as factor
+``{r}
+UniversalBank$Education<-as.factor(UniversalBank$Education)
+View(UniversalBank)
+``
+
+
+### Creating a dummy variable for education 
+``{r}
+Education<-dummyVars(~Education,UniversalBank)
+eduDV<-predict(Education,UniversalBank)
+head(eduDV)
+
+``
+
+## Removing education coloumn 
+``{r}
+
+UniversalBank<-eduDV[c(-6)]
+head(UniversalBank)
+``
+
+
+## Data partition train -60% and Valid-40%
+``{r}
+set.seed(111)
+Train_Index = createDataPartition(UniversalBank$Income,p=0.60, list=FALSE) # 60% reserved for Test
+Train_Data = UniversalBank[Train_Index,]
+validation_Data = UniversalBank[-Train_Index,] # Validation and Training data is rest
+
+summary(Test_Data)
+summary(Train_Data)
+summary(Validation_Data)
+
+dim(Train_Data)
+dim(Validation_Data)
+
+``
+
+
+###Standardise the data using normalization
+``{r}
+train.norm.df <- Train_Data
+valid.norm.df <- Validation_Data
+traval.norm.df <- TraVal_Data
+
+new.df<-data.frame(Age=40,Experience=10,Income=84,Family=2,CCAvg=2,Education=0,Mortgage=0,SecuritiesAccount=0,CDAccount=0,Online=1,creditcard=1)
+
+norm_model<-preProcess(Train_Data[,-8],method =c ("center","scale"))
+head(norm_model)
+train.norm.df[,-8]<-predict(norm_model,Train_Data[,-8])
+valid.norm.df[,-8]<-predict(norm_model,Validation_Data[,-8])
+total[,-8]<-predict(norm_model,total[,-8])
+head(UniversalBank)
+
+new.norm.df<-predict(norm_model,new.df)# check
+
+``
+
+### set seed
+``{r}
+
+
+set.seed(111)
+train_data <- train.norm.df[,-8]
+head(train_data)
+train_outcome <- factor(train.norm.df[,-8], levels = c(0,1), labels = c("deny","accept"))
+head(train_outcome)
+valid_data <- valid.norm.df[,-8]
+head(valid_data)
+validation_outcome <- factor(valid_data[,-8], levels = c(0,1), labels = c("deny","accept"))
+head(validation_outcome)
+total_data <- total[,-8]
+total_outcome <- factor(total[,-8], levels = c(0,1), labels = c("deny", "accept"))
+head(total_outcome)
+
+``
+
+
+
+##Predict the customer with k=1 
+
+``{r}
+
+TestTraining_Data <- c(40, 10, 84, 2, 2, 0, 0, 0, 0, 1, 1)
+knn_test <- knn(Test_Data,Testtraining_Data,cl=total_data,k=1,prob = TRUE)
+knn_test
+
+``
+##What is a choice of k that balances between ovrfitting and ignoring the 
+##predictor information
+
+bestk<-data.frame(k=seq(1,55,1),accurancy=rep (0,55))
+head(bestk)
+
+for (i in 1:55:1)  {
+  kkn.pred<-knn(train_data,valid_data,cl=total_outcome,k=i)
+  bestk[i,2]<-confusingMatrix(knn.pred,validation_outcome)$overall[1]
+  }
+
+head(bestk)
+bestk_fit<-bestK[which.max(best$accurancy),]
+bestk_fit
+
+``
+
+
+## showing the confusing matrix for the validation data that results from using the best k
+``{r}
+knn.pred<-knn(Train_Data,valid_data,cl=train_outcome,k=bestk_fit$k,prob=TRUE)
+CrossTable(validation_outcome,knn.pred)
+
+``
+
+
+## consider the following customers 
+
+``{r}
+Testtraining_newDataset<-c(40, 10, 84, 2, 2, 0, 1 ,0 , 0, 0, 0 , 1 )
+bestfitknn<-knn(train_data,Testtrainig_newDataset,cl=total_outcome, k=bestk_fit, prob=TRUE)
+best(fitknn)
+
+``
+
+### Repartition the data  test train ,test and validation and apply (50%:30%:20%)
+
+``{r}
+Pointernew1<-createDataPartition(UniversalBank$Income,p=0.5,list = FALSE)
+training_data2=UniversalBank[Pointernew1,]
+Remdata<-UniversalBank[-Pointernew1,]
+Pointernew2<-createDataPartition(Remdata$Income,p=0.6,list=FALSE)
+validation_data2=Remdata[Pointernew2,]
+Test_Data2<-Remdata[-Pointernew2,]
+head(Test_Data2)
+
+``
+
+#### Removing the columns
+``{r}
+
+UniversalBank<-UniversalBank
+UniversalBank<-UniversalBank[,c(-1,-5)]
+str(UniversalBank)
+
+``
+
+#standardize the data using normalization 
+
+``{r}
+norms_value2<-preProcess(training_data2,method = c("center","scale"))
+train.norm.df2<-predict(norms_value2,training_data2)
+validation.norm.df2<-predict(norms_value2,validation_data2)
+test.norm2<-predict(norms_value2,Test_Data2)
+total_norm.df2<-predict(norms_value2,UniversalBank)
+head(total_norm.df2)
+``
+
+###conti
+
+``{r}
+training_data2<-train.norm.df2[,-8]
+head(training_data2)
+train_outcome2 <- factor(train.norm.df2[,-8], levels = c(0,1), labels = c("deny","accept"))
+head(train_outcome2)
+validation_data2 <- validation.norm.df2[,-8]
+head(validation_data2)
+validation_outcome2 <- factor(validation.norm.df2[,-8], levels = c(0,1), labels = c("deny","accept"))
+head(validation_outcome2)
+total_data2 <- total_norm.df2[,-8]
+total_outcome2 <- factor(total_norm.df2[,-8], levels = c(0,1), labels = c("deny", "accept"))
+head(total_outcome2)
+
+``
+### Continue 
+``{r}
+train_data2 <- train_nf2[,-7]
+training_outcome2 <- factor(training_data2[,7], levels = c(0,1), labels = c("Deny","Accept"))
+valida_data2 <- validation_nf2[,-7]
+validation_outcome2 <- factor(validation_data2[,7], levels = c(0,1), labels = c("Deny", "Accept"))
+TestTraining_Data2 <- test_nf2[,-7]
+Testraining_outcome2 <- factor(test_data2[,7], levels = c(0,1), labels = c("Deny", "Accept"))
+Total_Data2 <- total_nf2[,-7]
+Total_Outcome2 <- factor(UBank[,7], levels = c(0,1), labels = c("Deny", "Accept"))
+``
+
+
+### Applying KNN with the optimum k value to the training and validation set 
+``{r}
+
+knn_validation2<-knn(training_data2,validation_data2,cl=training_outcome2,k= bestk_fit$k, prob = TRUE)
+CrossTables(validation_outcome2,knn_validation,prop.chisq=FALSE)
+# Validation accuracy :
+``
+
+##Applying KNN with optimum kvlue to the training and test set 
+`{r}
+knn_test<-knn(training_data2,TestTraining_Data2, cl=training_outcome2, k = bestk_fit$k, prob =TRUE)
+crosstables(Testraining_outcome2,knn_testing, prop.chisq=FALSE)
+# Test Accuracy
+``
+
+
+
+
+##Applying KNN with optimum value to the training and test set 
+``{r}
+knn_test<-knn(training_data2,TestTraining_Data2, cl=training_outcome2, k = bestk_fit$k, prob =TRUE)
+crosstables(Testraining_outcome2,knn_testing, prop.chisq=FALSE)
+# Test Accuracy
+``
+
+### Applying KNN with the  optimun k vale to the entire dataset.
+
+``{r}
+knn_total<-knn(training_data2,total_data2,cl=train_outcome2,k=best_fit,prob=TRUE)
+crosstables(total_outcome2,knn_total,prop.chisq=FALSE)
+total accurancy
+
+
+``
