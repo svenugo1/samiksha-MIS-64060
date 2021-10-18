@@ -1,0 +1,186 @@
+---
+title: "asg"
+author: "samiksha"
+date: "17/10/2021"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+##loading all the required libraries 
+```{r loading packages}
+library(reshape2)
+library(gmodels)
+library(caret)
+library(ISLR)
+library(e1071)
+library(ggplot2)
+library(lattice)
+```
+
+##Reading the universal bank file to UB
+```{r reading Ub}
+
+UB<-read.csv("C:/Users/SAMIKSHA/Desktop/UniversalBank.csv")
+Universal_bank<-read.csv("UniversalBank.csv")
+
+```
+
+##view
+```{r  summary UB}
+
+head(Universal_bank)
+
+```
+
+##change numerical variable to categorical variables
+```{r changing value}
+UB<- Universal_bank[,c(10,13,14)]
+head(UB)
+UB$Personal.Loan <- factor(UB$Personal.Loan)
+UB$Online<-factor(UB$Online)
+UB$CreditCard<-factor(UB$CreditCard)
+```
+
+##Split dataset into training (60%) and test(40%)
+```{r}
+set.seed(111)
+
+train.index<-sample(row.names(UB),0.6*dim(UB)[1])
+test.index<-setdiff(row.names(UB),train.index)
+train.df<-UB[train.index,]
+test.df<-UB[test.index,]
+train<-UB[train.index,]
+test<- UB[test.index,]
+head(test)
+```
+
+
+##A)Create a pivot table for the training data with Online as a column ##variable,CC as a row variable, and loan as second variable.The values inside table should covey the count.In R use function melt() and cast (),or function table().
+
+
+```{r}
+
+
+melt.UB =melt(train,id=c("Personal.Loan","CreditCard"),variable="Online")
+recast.UB=dcast(melt.UB, Personal.Loan+CreditCard ~ Online,length)
+recast.UB
+
+```
+##B)Consider the task of classifing a customer who owns a bank credit card and ## actively using an online banking service.Looking at the Probability of Loan 
+## acceptance given having a bank credit card and user of online service is
+##87/3000=0.029
+## 87+812=899
+## 87/899=0.096
+
+###C
+##Create two separate pivot table for the training data.One will have loan ##ows) as a function of online (column) and the other will have loan (rows) as  ##a function CC
+
+```{r}
+
+table(train[,c(1,2)])
+table(train[,c(1,3)])
+```
+
+
+
+###D. Compute the following quantities [P(A | B) means “the probability of A given B”]:=
+```{r}
+###i. P(CC = 1 | Loan = 1) (the proportion of credit card holders among the loan acceptors)
+
+Prop_1<-table(train[,c(3,1)])
+F2<-Prop_1[2,2]/(Prop_1[2,2]+Prop_1[1,2])
+F1
+```
+
+```{r}
+###ii. P(Online = 1 | Loan = 1)
+Prop_2<-table(train[,c(2,1)])
+F2<-Prop_2[2,2]/(Prop_2[2,2]+Prop_2[1,2])
+F2
+
+```
+
+```{r}
+###iii. P(Loan = 1) (the proportion of loan acceptors)
+Prop_3<-table(train[,1])
+F3<-Prop_3[2]/(Prop_3[2]+Prop_3[1])
+F3
+
+```
+
+```{r}
+
+ ###iv. P(CC=1|Loan=0)
+Prop_4<-table(train[,c(3,1)])
+F4<-Prop_4[2,1]/(Prop_4[2,1]+Prop_4[1,1])
+F4
+
+```
+
+```{r}
+###v. P(Online = 1 | Loan = 0)
+Prop_5<-table(train[,c(2,1)])
+F5<-Prop_5[2,1]/(Prop_5[2,1]+Prop_5[1,1])
+F5
+
+```
+
+
+```{r}
+###vi. P(Loan = 0)
+Prop_6<-table(train[,1])
+F6<-Prop_6[1]/(Prop_6[1]+Prop_6[2])
+F6
+
+```
+
+##E)
+##Use quantites computed above to compute the naive Bayes probability ##P(Loan=1|cc=1,Online =1).
+
+
+##Naive_Bayes Probabiliity =(F1*F2*F3)/[(F1*F2*F3)+(F4*F5*F6)]
+#0.2979452*0.6164384*0.09733333/0.2979452*0.6164384*0.09733333+
+##0.2998523*0.5893648*0.902667
+
+
+##F)comparing the value with the one obtained from the privot table in .Which is ##more accurate estimate ?  
+##      
+## the difference between the extract method and the naive- baise method  is 
+##method would need the exact same independent variable classification  to 
+##predict, where the naive bayee method does not.
+
+# Performing Naive Bayes on the training data
+```{r}
+require("e1071")
+NBmodel<-train[,c(1,2,3)]
+NBmodel1<-naiveBayes(Personal.Loan~.,data=NBmodel)
+NBmodel1
+```
+# After running the naive Bayes on the data, value obtained is 0.176690941,whereas the value obtained from is0.100768338 which are  almost similar 
