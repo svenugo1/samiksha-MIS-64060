@@ -115,7 +115,7 @@ table(train[,c(1,3)])
 ###i. P(CC = 1 | Loan = 1) (the proportion of credit card holders among the loan acceptors)
 
 Prop_1<-table(train[,c(3,1)])
-F2<-Prop_1[2,2]/(Prop_1[2,2]+Prop_1[1,2])
+F1<-Prop_1[2,2]/(Prop_1[2,2]+Prop_1[1,2])
 F1
 ```
 
