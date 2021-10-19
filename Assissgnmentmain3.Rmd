@@ -170,13 +170,16 @@ F6
 ##0.2998523*0.5893648*0.902667
 
 
-##F)comparing the value with the one obtained from the privot table in .Which is ##more accurate estimate ?  
+##F)comparing the value with the one obtained from the privot table in 0.1.Which is ##more accurate estimate ?  
 ##      
 ## the difference between the extract method and the naive- baise method  is 
 ##method would need the exact same independent variable classification  to 
-##predict, where the naive bayee method does not.
+##predict, where the naive bayee method .
 
-# Performing Naive Bayes on the training data
+##The value obtained from the pivot table is 0.176690941 and the naive bayes probability is 0.100768338 which are almost similar and
+## the value of the pivot is more accurate because pivot table does not assume that probabilities are independent.
+
+## G)Performing Naive Bayes on the training data
 ```{r}
 require("e1071")
 NBmodel<-train[,c(1,2,3)]
