@@ -1,0 +1,249 @@
+---
+title: "BA -assisgnment  1"
+author: "SAMIKSHA VENUGOPAL"
+date: "10/24/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r}
+summary(Online_Retail)
+```
+
+```{r}
+library(dplyr)
+library(tinytex)
+library(readr)
+library(ISLR)
+library(ggplot2)
+set.seed(111)
+```
+
+
+```{r}
+ORR<-read.csv("Online_Retail.csv")
+head(ORR)
+```
+
+
+
+
+
+## 1. Showing the breakdown of the number of transaction by countries i.e 
+## how many transaction are in the dataset for each country ( considering all records including   ##  cancelled transactions).Showing the total number  and also in percentage. Show ony countries ##   accounting for more than 1% of the total transaction. 
+
+```{r}
+ORR %>%
+  group_by(Country)%>%
+  tally(sort=TRUE) %>% 
+  summarise(Country, Counts= n, Percentage = n/sum(n) *100 ) %>% 
+  filter( Percentage >1)
+
+
+
+
+#2 Creating  a new variables ' Transaction Value ' that is the product of the  existing #"quantity' and "Unit price' variables .Add this variable to the  data frame 
+
+ORR<-mutate(ORR,"TransactionValue"=TransactionValue<-Quantity*UnitPrice)
+head(ORR[,9])
+
+
+
+
+
+##3 Using the newly craeted variables, Transcation value, show the breakdown of transaction value #by  country 
+
+
+ORR %>%
+  group_by(Country) %>%
+  summarise(TransValueSum = sum(TransactionValue)) %>% filter(TransValueSum > 130000) %>% arrange (desc( TransValueSum)) 
+
+
+
+##4 
+
+
+Temp<- strptime(ORR$InvoiceDate,format = '%m/%d/%Y %H:%M',tz='GMT')
+head(Temp)
+
+head(Online_Retail)
+
+ORR$NewInvoiceDate<- as.Date(Temp)
+ORR$Invoiceofweeklydays <- weekdays(ORR$NewInvoiceDate)
+ORR$NewInvoiceforhourly <- as.numeric(format(Temp,"%H"))
+ORR$NewInvoiceformonthly <- as.numeric(format(Temp,"%"))
+head(ORR)
+
+#a) Showing the percentage of transaction by days of the week
+
+ORR%>%
+  group_by(Invoiceofweeklydays)%>%
+  tally(sort=TRUE) %>%
+  summarise(Invoiceofweeklydays,TransactionCounts=n, Percentage= n/sum(n)*100)%>%
+  arrange(desc(TransactionCounts))
+
+
+#b) Showing the percentage of transaction by days of the week
+
+ORR %>%
+  group_by(NewInvoiceDate) %>%
+  summarise(TransValueSum = sum(TransactionValue)) %>%
+  mutate(TransValuePercent= TransValueSum/sum(TransValueSum)) %>%
+  arrange(desc(TransValueSum))
+
+#c) show the percentage of transcation  by month
+ORR %>%
+  group_by(NewInvoiceformonthly) %>%
+  summarise(TransValueSum=sum(TransactionValue)) %>%
+  mutate(TransValuePercent = TransValueSum/sum(TransValueSum)) %>%
+  arrange(desc(TransValuePercent))
+
+#d) What is the highest number of transaction from Australia
+
+ORR %>%
+  filter(Country == "Australia") %>%
+  group_by(InvoiceDate) %>%
+  tally(sort =TRUE) %>%
+  filter(n ==max(n))
+
+#e) Showing company  shut doen for maintenance hours for 2 consective hours 
+
+ORR %>%
+  group_by(NewInvoiceforhourly) %>%
+  tally(sort = TRUE) %>%
+  filter(NewInvoiceforhourly>=7 & NewInvoiceforhourly<=20) %>%
+  arrange(n) %>%
+  head(5)
+
+
+
+#5 Plot the histogram of transaction values from Germany . Use the hist () function to plot 
+
+ORR %>%
+  group_by(Country) %>%
+  filter(Country == "Germany") %>%
+  group_by(NewInvoiceformonthly) %>%
+  summarise(TransValueSum =sum(TransactionValue))->Germany
+  hist(Germany$TransValueSum, border = "pink",main ="Germany Transaction Value ",xlab = "Transaction Vlaue  sum per Month",ylab ="Frequency",col="pink")
+
+
+
+#6 Showing the customer with highest number of trascation and which customer is most valueable 
+
+ORR %>%
+  group_by(CustomerID) %>%
+  tally(sort = TRUE) %>%
+  filter (!is.na(CustomerID)) %>%
+  filter(n==max(n))
+
+ORR %>%
+  group_by(CustomerID) %>%
+  summarise(TransValueSum = sum(TransactionValue)) %>%
+  filter(!is.na(CustomerID)) %>%
+  filter(TransValueSum == max(TransValueSum))        
+
+
+
+##7  Calculating the missing value in the dataset 
+
+colMeans(is.na(ORR))
+
+
+
+##8   Showing the values  of transcation with missing customer ID 
+
+ORR %>%
+  filter(is.na(CustomerID)) %>%
+  group_by(Country) %>%
+  summarise(CustomerID) %>%
+  tally(sort=TRUE)
+
+
+##9 Showing the values of , how often the customeres comeback to the website  for their next shopping 
+
+
+ORR %>%
+  select(CustomerID, NewInvoiceDate) %>%
+  group_by(CustomerID) %>%
+  distinct(NewInvoiceDate) %>%
+  arrange(desc(CustomerID)) %>%
+  mutate(DaysBetween = NewInvoiceDate - lag(NewInvoiceDate))->
+  custDaysBtwVisit
+  
+
+custDaysBtwVisit %>%
+  filter(!is.na(DaysBetween))-> RetcustDaysBtwVisit
+  mean(RetcustDaysBtwVisit$DaysBetween)
+
+  
+  
+  
+
+
+
+##10 Showing  in the retail sector, rate of return of goods purchsed by customers 
+
+ORR%>%
+  group_by(Country)%>%
+  filter(Country == "France")%>%
+  select(Country,Quantity)%>%
+  filter(Quantity < 0 ) -> FrenchReturns
+
+ORR%>%
+  group_by(Country)%>%
+  filter(Country =="France")%>%
+  select(Quantity, Country)%>%
+  filter(Quantity >0 )->FrenchPurchases
+  FRReturns<-sum(FrenchPurchases$Quantity)
+  
+  FRTransaction<-sum(FrenchPurchases$Quantity)
+  FRReturns/FRTransaction*100
+
+##11 Showing the product that generates the higest revenue for the retailer
+
+
+ORR%>%
+  group_by(StockCode) %>%
+  summarise(TranscationValueTot =sum(TranscationValue)) %>%
+  arrange(desc(TranscationValueTot)) %>%
+  filter(StockCode !="DOT") %>%
+  filter(TranscationValueTot == max(TranscactionValueTot)
+
+ORR%>%
+  group_by(StockCode) %>%
+  filter(StockCode == "	22423")%>%
+  select(StockCode,Description)%>%
+  distinct(StockCode,Description)%>%
+  filter(Description== "REGENCY CAKESTAND 3 TIER")
+
+
+##12  Showing the values of number of unique customer represented in the dataset.Will use lenght() function
+
+ORR%>%
+  group_by(CustomerID) %>%
+  distinct(CustomerID) -> UniqueCustomers
+  length(UniqueCustomers$CustomerID)
+```
